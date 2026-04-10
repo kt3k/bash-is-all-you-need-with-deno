@@ -77,7 +77,7 @@ async function main() {
   const h = [] as Anthropic.MessageParam[]
 
   while (true) {
-    const p = prompt(">> ")
+    const p = prompt(">>")
     // 空入力 or q で終了
     if (p === null || p === "" || p === "q") {
       return
