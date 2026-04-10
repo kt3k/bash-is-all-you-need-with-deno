@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk"
+import { text } from "node:stream/consumers"
 
 const client = new Anthropic()
 const dec = new TextDecoder()
@@ -8,7 +9,7 @@ const TOOL_DESCRIPTION = `
 Patterns:
 - Read: cat/grep/find/ls
 - Write: echo '...' > file
-- Subagent: deno -A agent.ts "task description"
+- Subagent: deno -A --env agent.ts "task description"
 `.trim()
 
 const bashTool: Anthropic.Tool = {
@@ -46,11 +47,25 @@ async function chat(prompt: string, history: Anthropic.MessageParam[] = []) {
         const command = (b.input as { command: string }).command
         console.log(`bash -c %c"${command}"`, "color: cyan")
         let output: string
-        if (confirm("許可?")) {
-          const { stdout, stderr } = await Deno.spawnAndWait("bash", {
-            args: ["-c", command],
-          })
-          output = dec.decode(stdout) + dec.decode(stderr)
+        if (confirm("Allow?")) {
+          if (command.startsWith("deno -A --env agent.ts")) {
+            const cp = await Deno.spawn("bash", {
+              args: ["-c", command],
+              stdout: "piped",
+              stderr: "piped",
+            })
+            const stdout = cp.stdout.tee()
+            stdout[0].pipeTo(Deno.stdout.writable)
+            const stderr = cp.stderr.tee()
+            stderr[0].pipeTo(Deno.stderr.writable)
+            output = await Promise.all([text(stdout[1]), text(stderr[1])])
+              .then(([a, b]) => a + b)
+          } else {
+            const { stdout, stderr } = await Deno.spawnAndWait("bash", {
+              args: ["-c", command],
+            })
+            output = dec.decode(stdout) + dec.decode(stderr)
+          }
         } else {
           output = "permission denied by user"
         }
@@ -70,6 +85,7 @@ async function chat(prompt: string, history: Anthropic.MessageParam[] = []) {
 async function main() {
   if (Deno.args.length > 0) {
     // サブエージェントモード
+    console.log("subagent started")
     console.log(await chat(Deno.args[0]))
     return
   }
