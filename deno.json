@@ -1,4 +1,7 @@
 {
+  "tasks": {
+    "run": "deno -A --env agent.ts"
+  },
   "fmt": {
     "semiColons": false
   }
