@@ -42,9 +42,49 @@ Allow? [y/N] y
 The core idea (inspired by a Reddit thread) is that `bash` alone is sufficient as a universal tool — Claude can read/write files, search code, and delegate to subagents, all through shell commands.
 ```
 
-### top selling PC scraper
+### Count the html tags in a url
 
 ```shellsession
+$ deno -A --env agent.ts
+>> count the html tags in www.google.com
+⏺ I'll fetch the Google homepage and count the HTML tags for you!
+bash -c "curl -s https://www.google.com | grep -oP '<[a-zA-Z][a-zA-Z0-9]*' | sort | uniq -c | sort -rn"
+Allow? [y/N] y
+bash -c "curl -s https://www.google.com | grep -oE '<[a-zA-Z][a-zA-Z0-9]*' | sort | uniq -c | sort -rn"
+Allow? [y/N] y
+Here's a summary of the **HTML tags found on www.google.com**:
+
+> ⚠️ Note: Some results like `<e`, `<d`, `<arguments`, `<this`, etc. are **not real HTML tags** — they are JavaScript code patterns that happen to match the `<word` pattern. Below is a clean breakdown of **actual HTML tags only**:
+
+| Count | Tag |
+|-------|-----|
+| 19 | `<div` |
+| 19 | `<a` |
+| 10 | `<input` |
+| 9 | `<script` |
+| 6 | `<span` |
+| 5 | `<br` |
+| 4 | `<meta` |
+| 4 | `<b` |
+| 3 | `<td` |
+| 1 | `<tr` |
+| 1 | `<title` |
+| 1 | `<table` |
+| 1 | `<svg` |
+| 1 | `<style` |
+| 1 | `<path` |
+| 1 | `<p` |
+| 1 | `<img` |
+| 1 | `<image` |
+| 1 | `<html` |
+| 1 | `<head` |
+| 1 | `<form` |
+| 1 | `<center` |
+| 1 | `<body` |
+
+### 📊 Total: ~**101 real HTML tag instances** across **23 unique tag types**
+
+Google's homepage is intentionally **very minimal** in its HTML structure — most of the complexity is loaded dynamically via JavaScript.
 ```
 
 ## License
