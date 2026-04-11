@@ -55,9 +55,9 @@ async function chat(prompt: string, history: Anthropic.MessageParam[] = []) {
               stderr: "piped",
             })
             const stdout = cp.stdout.tee()
-            stdout[0].pipeTo(Deno.stdout.writable)
+            stdout[0].pipeTo(Deno.stdout.writable, { preventClose: true })
             const stderr = cp.stderr.tee()
-            stderr[0].pipeTo(Deno.stderr.writable)
+            stderr[0].pipeTo(Deno.stderr.writable, { preventClose: true })
             output = await Promise.all([text(stdout[1]), text(stderr[1])])
               .then(([a, b]) => a + b)
           } else {
