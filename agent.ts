@@ -85,8 +85,10 @@ async function chat(prompt: string, history: Anthropic.MessageParam[] = []) {
 async function main() {
   if (Deno.args.length > 0) {
     // サブエージェントモード
-    console.log("subagent started")
+    const id = Math.random().toString(36).slice(2, 5)
+    console.log(`subagent ${id} started`)
     console.log(await chat(Deno.args[0]))
+    console.log(`subagent ${id} ended`)
     return
   }
   // 履歴
