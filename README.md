@@ -264,6 +264,148 @@ $ ./check_ip.sh
   ──────────────────────────────────────
 ```
 
+## Example runs with gpt-5.4
+
+There is also OpenAI version of script (`agent_openai.ts`). The below shows the
+example runs with it
+
+### Prompt: `read the source code and summarize very briefly`
+
+```shellsession
+$ deno -A --env agent_openai.ts
+>> read the source code and summarize very briefly
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && find . -maxdepth 2 \( -name node_modules -o -name .git \) -prune -o -type f | sort | sed 's#^./##' | head -200"
+Allow? [y/N] y
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && sed -n '1,220p' README.md"
+Allow? [y/N] y
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && sed -n '1,220p' agent.ts"
+Allow? [y/N] y
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && sed -n '1,260p' agent_openai.ts"
+Allow? [y/N] y
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && sed -n '1,220p' check_ip.sh"
+Allow? [y/N] y
+bash -c "cd /Users/kt3k/oss/bash-is-all-you-need-with-deno && cat deno.json && printf '\n---\n' && cat package.json"
+Allow? [y/N] y
+A tiny Deno CLI coding agent that gives the model just one tool: `bash`.
+
+- `agent.ts`: Anthropic-based version
+- `agent_openai.ts`: OpenAI-based version
+- Both run in a loop: ask model → execute requested shell commands with user approval → feed output back
+- Supports subagents by recursively launching itself via shell
+- `check_ip.sh` is an example/generated utility script for showing local and public IPs
+
+Core idea: bash alone is enough to build a practical agent.
+```
+
+### Prompt: `count the html tags in www.google.com`
+
+```shellsession
+$ deno -A --env agent_openai.ts
+>> count the html tags in www.google.com
+bash -c "python - <<'PY'
+import urllib.request, re
+html = urllib.request.urlopen('https://www.google.com').read().decode('utf-8', 'ignore')
+# count opening/closing/self-closing tag occurrences, excluding comments/doctype loosely
+matches = re.findall(r'<\s*/?\s*([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*?>', html)
+from collections import Counter
+c = Counter(m.lower() for m in matches)
+for tag, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+    print(f'{tag}\t{n}')
+print('TOTAL\t' + str(sum(c.values())))
+PY"
+Allow? [y/N] y
+bash -c "python3 - <<'PY'
+import urllib.request, re
+html = urllib.request.urlopen('https://www.google.com').read().decode('utf-8', 'ignore')
+matches = re.findall(r'<\s*/?\s*([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*?>', html)
+from collections import Counter
+c = Counter(m.lower() for m in matches)
+for tag, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+    print(f'{tag}\t{n}')
+print('TOTAL\t' + str(sum(c.values())))
+PY"
+Allow? [y/N] y
+bash -c "curl -L -s https://www.google.com | python3 - <<'PY'
+import sys, re
+from collections import Counter
+html = sys.stdin.read()
+matches = re.findall(r'<\s*/?\s*([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*?>', html)
+c = Counter(m.lower() for m in matches)
+for tag, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+    print(f'{tag}\t{n}')
+print('TOTAL\t' + str(sum(c.values())))
+PY"
+Allow? [y/N] y
+bash -c "curl -L -s https://www.google.com | head -c 500 | sed -n '1,20p'"
+Allow? [y/N] y
+bash -c "tmp=$(mktemp); curl -L -s https://www.google.com > "$tmp"; python3 - <<'PY' "$tmp"
+import sys, re
+from collections import Counter
+path = sys.argv[1]
+html = open(path, encoding='utf-8', errors='ignore').read()
+matches = re.findall(r'<\s*/?\s*([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*?>', html)
+c = Counter(m.lower() for m in matches)
+for tag, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+    print(f'{tag}\t{n}')
+print('TOTAL\t' + str(sum(c.values())))
+PY
+rm "$tmp""
+Allow? [y/N] y
+I counted the HTML tag occurrences in the current HTML returned by `https://www.google.com`.
+
+Top counts:
+- `div`: 38
+- `a`: 25
+- `script`: 15
+- `span`: 12
+- `input`: 10
+- `td`: 6
+- `br`: 5
+- `meta`: 4
+- `g`: 3
+
+Full count:
+div         38
+a           25
+script      15
+span        12
+input       10
+td          6
+br          5
+meta        4
+g           3
+arguments   2
+b           2
+body        2
+c           2
+center      2
+d           2
+e           2
+form        2
+head        2
+html        2
+image       2
+p           2
+path        2
+style       2
+svg         2
+table       2
+title       2
+tr          2
+h           1
+img         1
+n           1
+TOTAL       157
+
+Note: this was counted from raw HTML with a regex, so some entries like `arguments`, `c`, `d`, `e`, `h`, `n` may come from inline SVG/math/script-like markup or parsing artifacts rather than normal HTML elements.
+
+If you want, I can also give:
+- only standard HTML tags
+- counts grouped by opening vs closing tags
+- a more accurate DOM-based count using an HTML parser
+>>
+```
+
 ## License
 
 MIT
