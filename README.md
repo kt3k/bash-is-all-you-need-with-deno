@@ -505,6 +505,12 @@ If you want, I can also make it:
 >>
 ````
 
+```shellsession
+$ bash check_ip.sh 
+Local IP:  unavailable
+Public IP: 106.146.22.199
+```
+
 ## License
 
 MIT
