@@ -1,6 +1,7 @@
 # bash only coding agent
 
-This demo is inspired by [this reddit thread](https://www.reddit.com/r/ClaudeAI/comments/1ql4t00/write_a_claude_code_with_16_line_code_bash_is_all/).
+This demo is inspired by
+[this reddit thread](https://www.reddit.com/r/ClaudeAI/comments/1ql4t00/write_a_claude_code_with_16_line_code_bash_is_all/).
 
 ## How to run
 
@@ -18,7 +19,7 @@ deno -A --env agent.ts
 
 ## Example runs
 
-### Review this code base
+### Prompt: `read the source code and summarize very briefly`
 
 ```shellsession
 $ deno -A --env agent.ts
@@ -42,11 +43,9 @@ Allow? [y/N] y
 The core idea (inspired by a Reddit thread) is that `bash` alone is sufficient as a universal tool — Claude can read/write files, search code, and delegate to subagents, all through shell commands.
 ```
 
-### Count the html tags in a url
+### Prompt: `count the html tags in www.google.com`
 
-- Prompt: `count the html tags in www.google.com`
-
-````shellsession
+```shellsession
 $ deno -A --env agent.ts
 >> count the html tags in www.google.com
 ⏺ I'll fetch the Google homepage and count the HTML tags for you!
@@ -87,11 +86,9 @@ Here's a summary of the **HTML tags found on www.google.com**:
 ### 📊 Total: ~**101 real HTML tag instances** across **23 unique tag types**
 
 Google's homepage is intentionally **very minimal** in its HTML structure — most of the complexity is loaded dynamically via JavaScript.
-````
+```
 
-### Write a script to show the current ip address
-
-- Prompt: `write a script to check the current ip address of the machine`
+### Prompt: `write a script to check the current ip address of the machine`
 
 ````
 $ deno -A --env agent.ts
@@ -246,6 +243,26 @@ Fetches your public-facing IP by querying **4 reliable services** in order (with
 - Timestamp of when the check was run
 - Graceful error messages if IP can't be determined
 ````
+
+```shellsession
+$ ./check_ip.sh 
+
+╔══════════════════════════════════════╗
+║        🌐  IP Address Checker        ║
+╚══════════════════════════════════════╝
+
+🔒  Local / Private IP Address
+  ──────────────────────────────────
+  ✔  IP Address : 172.20.10.4
+
+🌍  Public / External IP Address
+  ──────────────────────────────────
+  ✔  IP Address : xxx.xxx.xxx.xxx
+
+  ──────────────────────────────────────
+  Checked at: 2026-04-13 15:31:52 JST
+  ──────────────────────────────────────
+```
 
 ## License
 
